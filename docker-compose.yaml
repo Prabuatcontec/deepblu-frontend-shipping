@@ -13,4 +13,7 @@ services:
     container_name: shipping_c
     ports:
       - '3000:3000'
+    volumes:
+      - ./shipping:/app
+      - ./app/node_modules
     stdin_open: true

@@ -1,22 +1,22 @@
-import { useEffect, useState } from 'react'
+import React from 'react';
 import './App.css';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Shipping from './components/Shipping/Shipping';
+import Dashboard from './components/Dashboard/Dashboard';
+import Login from './components/Login/Login';
 
 function App() {
-  const [blogs, setBlogs] = useState([])
-  useEffect(() => {
-    fetch('http://localhost:4000/')
-      .then(res => res.json())
-      .then(data => setBlogs(data))
-  }, [])
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>all blogs</h1>
-        {blogs && blogs.map(blog => (
-          <div key={blog.id}>{blog.title}</div>
-        ))}
-      </header>
+    <div className="wrapper">
+      <h1>Application</h1>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/shipping" element={<Shipping />} />
+          <Route path="/" element={<Login />} />
+              
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
