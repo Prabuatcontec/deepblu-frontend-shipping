@@ -11,3 +11,73 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+#root {
+  width: 100%;
+  height: 100%; 
+  background-color: #e9e9e9;
+  position: absolute;
+  top:0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  
+  margin: auto;
+}
+input[type=text] {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  background-color: #3CBC8D;
+  color: white;
+}
+input[type=password] {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  background-color: #3CBC8D;
+  color: white;
+}
+input[type=text]:focus {
+  background-color: lightblue;
+}
+button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 12px;
+}
+input[type=password]:focus {
+  background-color: lightblue;
+}
+.login{
+  width: 200px;
+  height: 300px; 
+  background-color: white;
+  position: absolute;
+  padding: 40px;
+  top:0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: 12px;
+  margin: auto;
+}
+button:hover{ 
+  background-color: gray; 
+   
+}
+label {
+  color: #B4886B;
+  font-weight: bold;
+  display: block;
+}
