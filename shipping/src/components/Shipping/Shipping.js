@@ -1,7 +1,10 @@
-import React from 'react';
+import React, {useState} from 'react';
 
 export default function Shipping() {
+  
   return(
-    <h2>Shipping</h2>
+    <div class="container">
+      <h2>Shipping</h2>
+    </div>
   );
 }

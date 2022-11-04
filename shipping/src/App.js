@@ -11,11 +11,10 @@ function App() {
   );
   return (
     <div className="wrapper">
-      <h1>Application</h1>
       <BrowserRouter>
         <Routes>
           <Route path="/dashboard" element={isLoggedIn ? <Dashboard/> : <Navigate to='/'/>} />
-          <Route path="/shipping" element={isLoggedIn ? <Shipping/> : <Navigate to='/'/>} />
+          <Route path="/shipping" element={<Shipping/>} />
           <Route path="/" element={!isLoggedIn ? <Login/> : <Navigate to='/shipping'/>}/>
               
         </Routes>
