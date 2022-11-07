@@ -88,8 +88,19 @@ button:hover{
   background-color: gray; 
    
 }
+.low-height{
+  width: 40px !important;
+  height: 20px !important;
+}
+.inner-container{
+  background-color: #cfd4d2;
+  padding: 10px;
+}
 label {
   color: #B4886B;
   font-weight: bold;
   display: block;
+}
+.column {
+  height: 40px; 
 }

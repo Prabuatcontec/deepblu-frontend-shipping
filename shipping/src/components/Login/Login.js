@@ -42,7 +42,7 @@ export default function Login() {
         _username: '', _password: ''
       });
     } catch (e) {
-      alert(`Registration failed! ${e.message}`);
+      alert(`Login failed! ${e.message}`);
     }
   }
 
