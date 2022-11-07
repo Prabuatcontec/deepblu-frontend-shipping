@@ -1,19 +1,8 @@
 version: "3.8"
-services:
-  api:
-    build: ./api
-    container_name: api_c
-    ports:
-      - '4000:4000'
-    volumes:
-      - ./api:/app
-      - ./app/node_modules
+services: 
   myblog:
     build: ./shipping
     container_name: shipping_c
     ports:
-      - '3000:3000'
-    volumes:
-      - ./shipping:/app
-      - ./app/node_modules
+      - '3000:3000' 
     stdin_open: true
