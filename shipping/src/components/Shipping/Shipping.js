@@ -6,7 +6,7 @@ export default function Shipping() {
   const [weight, setWeight] = useState('');
   const [validShip, setValidShip] = useState(false);
   const getdate = (event) => {
-
+    
     let newDate = new Date()
     let date = newDate.getDate();
     let month = newDate.getMonth() + 1;
@@ -64,9 +64,10 @@ export default function Shipping() {
 
   const shipmentDetail = async () => {
 
-    const response = await fetch('https://deepbluapi.gocontec.com/app_dev.php/autoreceive/shipment/details/' + value, {
+    const response = await fetch('https://deepbluapi.gocontec.com/autoreceive/shipment/details/' + value, {
       method: 'GET',
       headers: {
+        'Access-Control-Allow-Origin': '*',
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM='
@@ -79,6 +80,41 @@ export default function Shipping() {
     setShipDetail(shippingDetail);
     setValidShip(true)
     localStorage.setItem('shipping_detail', shippingDetail['SOST_CourierMethodID'])
+    await fedexLogin();
+
+    window.open('http://deepblu.replicocorp.com/shipping_data_collection.php?_axousr=adminnc&_axopass=_axopass&_interface=simple&shipId=' + shippingDetail['SOST_ShipID'], 'Shipment Data Collection', 'height=600,width=800,top=100,left=100');
+  }
+  const addmin = async () => {
+    let s = new Date();
+    return s.setMinutes(s.getMinutes() + 55);
+  }
+
+  const fedexLogin = async () => {
+    if (localStorage.getItem('fedexTokentime') == null) {
+      localStorage.setItem('fedexTokentime', 0)
+    }
+    let s = new Date();
+    if (s.setMinutes(s.getMinutes() + 1) > localStorage.getItem('fedexTokentime')) {
+
+      const response = await fetch('oauth/token', {
+        method: 'POST',
+        body: new URLSearchParams({
+          "grant_type": "client_credentials",
+          "client_id": "l7b1806c4c147e43e38f7da9df054870ef",
+          "client_secret": "eba5d60fed7c49748bce37abaca99ce5"
+        }),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        }
+      });
+      if (response.status !== 200) {
+        throw new Error(`Request failed: ${response.status}`);
+      }
+      const token = await response.json();
+      localStorage.setItem('fedexToken', token['access_token'])
+      localStorage.setItem('fedexTokentime', await addmin())
+    }
   }
 
   const onSubmit = async (event) => {
@@ -93,12 +129,97 @@ export default function Shipping() {
     }
   }
 
+  const shipObject = {
+    "labelResponseOptions": "LABEL",
+    "requestedShipment": {
+      "shipper": {
+        "contact": {
+          "personName": "SHIPPER NAME",
+          "phoneNumber": 1234567890,
+          "companyName": "Shipper Company Name"
+        },
+        "address": {
+          "streetLines": [
+            "SHIPPER STREET LINE 1"
+          ],
+          "city": "HARRISON",
+          "stateOrProvinceCode": "AR",
+          "postalCode": 72601,
+          "countryCode": "US"
+        }
+      },
+      "recipients": [
+        {
+          "contact": {
+            "personName": "RECIPIENT NAME",
+            "phoneNumber": 1234567890,
+            "companyName": "Recipient Company Name"
+          },
+          "address": {
+            "streetLines": [
+              "RECIPIENT STREET LINE 1",
+              "RECIPIENT STREET LINE 2"
+            ],
+            "city": "Collierville",
+            "stateOrProvinceCode": "TN",
+            "postalCode": 38017,
+            "countryCode": "US"
+          }
+        }
+      ],
+      "shipDatestamp": "2020-07-04",
+      "serviceType": "PRIORITY_OVERNIGHT",
+      "packagingType": "FEDEX_ENVELOPE",
+      "pickupType": "USE_SCHEDULED_PICKUP",
+      "blockInsightVisibility": false,
+      "shippingChargesPayment": {
+        "paymentType": "SENDER"
+      },
+      "shipmentSpecialServices": {
+        "specialServiceTypes": [
+          "RETURN_SHIPMENT"
+        ],
+        "returnShipmentDetail": {
+          "returnType": "PRINT_RETURN_LABEL"
+        }
+      },
+      "labelSpecification": {
+        "imageType": "PDF",
+        "labelStockType": "PAPER_85X11_TOP_HALF_LABEL"
+      },
+      "requestedPackageLineItems": [
+        {
+          "weight": {
+            "value": 1,
+            "units": "LB"
+          }
+        }
+      ]
+    },
+    "accountNumber": {
+      "value": "740561073"
+    }
+  }
+
+  const onShip = async (event) => {
+
+    event.preventDefault(); // Prevent default submission
+    try {
+      shipObject.requestedShipment.shipper.contact.personName = shipDetail.SOMT_ShipToName
+
+      console.log(shipObject) 
+    } catch (e) {
+      alert(`Registration failed! ${e.message}`);
+
+    }
+  }
+
   const onChange = (event) => {
     setValue(event.target.value);
   };
 
   return (
-    
+
     <div class="container">
       <form onSubmit={onSubmit}>
         <div><h2>Shipping</h2></div>
@@ -107,39 +228,39 @@ export default function Shipping() {
           <input required type="text" value={value} onChange={onChange} />
         </label>
         <div>
-          <button type="submit">Submit</button>
+          <button type="submit">Submit</button> <button type="button" onClick={onShip}>Ship</button>
         </div>
-      </form>  
+      </form>
       <div class="inner-container"    >
-      <div class="row">
-        <div class="column">Ship Id: <span class="display-val">{shipDetail.SOST_ShipID}</span></div>
-        <div class="column">Ship Via: <span class="display-val">{shipDetail.SOST_ShipID}</span></div>
+        <div class="row">
+          <div class="column"><b>Ship Id:</b> <span class="display-val">{shipDetail.SOST_ShipID}</span></div>
+          <div class="column"><b>Ship Via:</b> <span class="display-val">{shipDetail.SOST_ShipID}</span></div>
+        </div>
+        <div class="row">
+          <div class="column"><b>Company:</b> <span class="display-val"> {shipDetail.SOMT_ShipToCompany}</span></div>
+          <div class="column"><b>Ship Date:</b> <input type="date" id="theDate" value={shipDetail.SOMT_ShipToDate} /></div>
+        </div>
+        <div class="row">
+          <div class="column"><b>Contact:</b> <span class="display-val"> {shipDetail.SOMT_ShipToName}</span></div>
+          <div class="column"><b>Weight:</b> <input class="low-height" type="text" id="weight" value={weight} /> - lbs </div>
+        </div>
+        <div class="row">
+          <div class="column"><b>Address 1:</b> <span class="display-val"> {shipDetail.SOMT_ShipToAddr1}</span></div>
+          <div class="column"><b>Special Service:</b>   <span class="display-val">{shipDetail.SOMT_ShipSpecialIns}</span> </div>
+        </div>
+        <div class="row">
+          <div class="column"><b>Line 1:</b> <span class="display-val"> {shipDetail.SOMT_ShipToAddr2}</span></div>
+        </div>
+        <div class="row">
+          <div class="column"><b>City-State-zip:</b> <span class="display-val"> {shipDetail.SOMT_ShipToAddr2}-{shipDetail.SOMT_ShipToState}-{shipDetail.SOMT_ShipToPostalCode}</span></div>
+        </div>
+        <div class="row">
+          <div class="column"><b>Country:</b> <span class="display-val"> {shipDetail.SOMT_ShipToCountry}</span></div>
+        </div>
+        <div class="row">
+          <div class="column"><b>Phone:</b> <span class="display-val"> {shipDetail.SOMT_ShipToPhone}</span></div>
+        </div>
       </div>
-      <div class="row">
-        <div class="column">Company: <span class="display-val"> {shipDetail.SOMT_ShipToCompany}</span></div>
-        <div class="column">Ship Date: <input type="date" id="theDate" value={shipDetail.SOMT_ShipToDate} /></div>
-      </div>
-      <div class="row">
-        <div class="column">Contact: <span class="display-val"> {shipDetail.SOMT_ShipToName}</span></div>
-         <div class="column">Weight: <input class="low-height" type="text" id="weight" value={weight} /> - lbs </div>
-      </div>
-      <div class="row">
-        <div class="column">Address 1: <span class="display-val"> {shipDetail.SOMT_ShipToAddr1}</span></div>
-        <div class="column">Special Service:   <span class="display-val">{shipDetail.SOMT_ShipSpecialIns}</span> </div>
-      </div>
-      <div class="row">
-        <div class="column">Line 1: <span class="display-val"> {shipDetail.SOMT_ShipToAddr2}</span></div>
-      </div>
-      <div class="row">
-        <div class="column">City-State-zip: <span class="display-val"> {shipDetail.SOMT_ShipToAddr2}-{shipDetail.SOMT_ShipToState}-{shipDetail.SOMT_ShipToPostalCode}</span></div>
-      </div>
-      <div class="row">
-        <div class="column">Country: <span class="display-val"> {shipDetail.SOMT_ShipToCountry}</span></div>
-      </div>
-      <div class="row">
-        <div class="column">Phone: <span class="display-val"> {shipDetail.SOMT_ShipToPhone}</span></div>
-      </div>
-    </div>
     </div>
   );
 
