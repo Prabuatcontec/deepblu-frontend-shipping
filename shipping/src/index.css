@@ -91,6 +91,8 @@ button:hover{
 .low-height{
   width: 40px !important;
   height: 20px !important;
+  color: white !important;
+  padding: 0px !important;
 }
 .inner-container{
   background-color: #cfd4d2;

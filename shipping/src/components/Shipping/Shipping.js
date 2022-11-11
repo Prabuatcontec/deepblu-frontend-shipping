@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 export default function Shipping() {
   const [value, setValue] = useState('');
   const [weight, setWeight] = useState('');
+  const [courier, setCourier] = useState('');
+  const [returnLab, setReturnLab] = useState('');
   const [validShip, setValidShip] = useState(false);
   const getdate = (event) => {
-    
+
     let newDate = new Date()
     let date = newDate.getDate();
     let month = newDate.getMonth() + 1;
@@ -77,6 +79,7 @@ export default function Shipping() {
       throw new Error(`Request failed: ${response.status}`);
     }
     const shippingDetail = await response.json();
+    console.log(999)
     setShipDetail(shippingDetail);
     setValidShip(true)
     localStorage.setItem('shipping_detail', shippingDetail['SOST_CourierMethodID'])
@@ -88,9 +91,9 @@ export default function Shipping() {
     let s = new Date();
     return s.setMinutes(s.getMinutes() + 55);
   }
-
+  //https://apis-sandbox.fedex.com/ship/v1/shipments
   const fedexLogin = async () => {
-    if (localStorage.getItem('fedexTokentime') == null) {
+    if (localStorage.getItem('fedexTokentime') === null) {
       localStorage.setItem('fedexTokentime', 0)
     }
     let s = new Date();
@@ -124,99 +127,161 @@ export default function Shipping() {
       await shipmentDetail();
       setValue('');
     } catch (e) {
-      alert(`Registration failed! ${e.message}`);
+      alert(`Registration failedddd! ${e.message}`);
 
     }
   }
+  const courierObject = {
 
-  const shipObject = {
-    "labelResponseOptions": "LABEL",
-    "requestedShipment": {
-      "shipper": {
-        "contact": {
-          "personName": "SHIPPER NAME",
-          "phoneNumber": 1234567890,
-          "companyName": "Shipper Company Name"
-        },
-        "address": {
-          "streetLines": [
-            "SHIPPER STREET LINE 1"
-          ],
-          "city": "HARRISON",
-          "stateOrProvinceCode": "AR",
-          "postalCode": 72601,
-          "countryCode": "US"
-        }
-      },
-      "recipients": [
-        {
-          "contact": {
-            "personName": "RECIPIENT NAME",
-            "phoneNumber": 1234567890,
-            "companyName": "Recipient Company Name"
-          },
-          "address": {
-            "streetLines": [
-              "RECIPIENT STREET LINE 1",
-              "RECIPIENT STREET LINE 2"
-            ],
-            "city": "Collierville",
-            "stateOrProvinceCode": "TN",
-            "postalCode": 38017,
-            "countryCode": "US"
-          }
-        }
-      ],
-      "shipDatestamp": "2020-07-04",
-      "serviceType": "PRIORITY_OVERNIGHT",
-      "packagingType": "FEDEX_ENVELOPE",
-      "pickupType": "USE_SCHEDULED_PICKUP",
-      "blockInsightVisibility": false,
-      "shippingChargesPayment": {
-        "paymentType": "SENDER"
-      },
-      "shipmentSpecialServices": {
-        "specialServiceTypes": [
-          "RETURN_SHIPMENT"
-        ],
-        "returnShipmentDetail": {
-          "returnType": "PRINT_RETURN_LABEL"
-        }
-      },
-      "labelSpecification": {
-        "imageType": "PDF",
-        "labelStockType": "PAPER_85X11_TOP_HALF_LABEL"
-      },
-      "requestedPackageLineItems": [
-        {
-          "weight": {
-            "value": 1,
-            "units": "LB"
-          }
-        }
-      ]
-    },
-    "accountNumber": {
-      "value": "740561073"
-    }
+    "Priority Overnight": "PRIORITY_OVERNIGHT",
+    "Standard Overnight/RL": "STANDARD_OVERNIGHT_RL",
+    "Ground Residential": "GROUND_HOME_DELIVERY",
+    "Ground/RL": "FEDEX_GROUND_RL",
+    "Ground": "FEDEX_GROUND",
+    "2nd Day Air/RL": "FEDEX_2_DAY"
+    // "Ground Residential Bulk":
+    // "Priority Overnight Saturday/RL":
+    // "Ground Residential/RL":
+    // "2-Day/RL":
+    // "Ground Residential/RL/SIG":
+    // "Ground Commercial/RL":
+    // "2-Day":
+    // "SmartPost Parcel Select":
+    // "SmartPost Parcel Select/RL":
+    // "Ground":
+    // "Priority Overnight Saturday":
+    // "Standard Overnight":
+    // "Ground Commercial":
+    // "Standard Overnight/RL/Sig":
+    // "Next Day":
+    // "Priority Overnight/RL": 
   }
+
 
   const onShip = async (event) => {
 
     event.preventDefault(); // Prevent default submission
-    try {
-      shipObject.requestedShipment.shipper.contact.personName = shipDetail.SOMT_ShipToName
 
-      console.log(shipObject) 
+    if (weight === '' || weight > 1) {
+      alert(`Weight should be greater than 0 and less than 1`);
+    } else { 
+    try {
+
+      setReturnLab(false)
+      console.log(shipDetail.SCMT_Method)
+      setCourier(shipDetail.SCMT_Method)
+      if (courier.slice(-3) === "_RL") {
+        setCourier(courier.slice(0, -3))
+        setReturnLab(true)
+      }
+
+      const shipObject = {
+        "labelResponseOptions": "LABEL",
+        "requestedShipment": {
+          "shipper": {
+            "contact": {
+              "personName": "CONTEC",
+              "phoneNumber": 1234567890,
+              "companyName": "CONTEC LLC"
+            },
+            "address": {
+              "streetLines": [
+                "1011 State St. "
+              ],
+              "city": "Schenectady",
+              "stateOrProvinceCode": "NY",
+              "postalCode": 12307,
+              "countryCode": "US"
+            }
+          },
+          "recipients": [
+            {
+              "contact": {
+                "personName": shipDetail.SOMT_ShipToName,
+                "phoneNumber": shipDetail.SOMT_ShipToPhone,
+                "companyName": shipDetail.SOMT_ShipToCompany
+              },
+              "address": {
+                "streetLines": [
+                  shipDetail.SOMT_ShipToAddr1,
+                  shipDetail.SOMT_ReturnToAddr2
+                ],
+                "city": shipDetail.SOMT_ShipToCity,
+                "stateOrProvinceCode": shipDetail.SOMT_ShipToState,
+                "postalCode": shipDetail.SOMT_ShipToPostalCode,
+                "countryCode": shipDetail.SOMT_ShipToCountry
+              }
+            }
+          ],
+          "shipDatestamp": getdate(),
+          "serviceType": courierObject[courier],
+          "packagingType": "YOUR_PACKAGING",
+          "pickupType": "USE_SCHEDULED_PICKUP",
+          "blockInsightVisibility": false,
+          "shippingChargesPayment": {
+            "paymentType": "SENDER"
+          },
+          "shipmentSpecialServices": {
+            "specialServiceTypes": [
+              "RETURN_SHIPMENT"
+            ],
+            "returnShipmentDetail": {
+              "returnType": "PRINT_RETURN_LABEL"
+            }
+          },
+          "labelSpecification": {
+            "imageType": "PDF",
+            "labelStockType": "STOCK_4X6"
+          },
+          "requestedPackageLineItems": [
+            {
+              "weight": {
+                "value": weight,
+                "units": "LB"
+              }
+            }
+          ]
+        },
+        "accountNumber": {
+          "value": "740561073"
+        }
+      }
+
+      if (returnLab == false) {
+        //shipObject.requestedShipment.shipmentSpecialServices = {}
+      }
+
+      const response = await fetch('ship/v1/shipments', {
+        method: 'POST',
+        body: JSON.stringify(shipObject),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('fedexToken')
+        }
+      });
+      if (response.status !== 200) {
+        throw new Error(`Request failed: ${response.status}`);
+      }
+      const shipDetails = await response.json(); 
+      window.open("data:application/pdf;base64," + shipDetails.output.transactionShipments[0].pieceResponses[0].packageDocuments[0].encodedLabel);
+      console.log(shipObject)
     } catch (e) {
       alert(`Registration failed! ${e.message}`);
 
     }
   }
+  }
 
   const onChange = (event) => {
     setValue(event.target.value);
   };
+
+  const onWeight = (event) => {
+    console.log(event.target.value)
+    setWeight(event.target.value);
+  };
+
 
   return (
 
@@ -242,7 +307,7 @@ export default function Shipping() {
         </div>
         <div class="row">
           <div class="column"><b>Contact:</b> <span class="display-val"> {shipDetail.SOMT_ShipToName}</span></div>
-          <div class="column"><b>Weight:</b> <input class="low-height" type="text" id="weight" value={weight} /> - lbs </div>
+          <div class="column"><b>Weight:</b> <input class="low-height" type="text" id="weight" value={weight} onChange={onWeight} /> - lbs </div>
         </div>
         <div class="row">
           <div class="column"><b>Address 1:</b> <span class="display-val"> {shipDetail.SOMT_ShipToAddr1}</span></div>

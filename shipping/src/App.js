@@ -15,7 +15,7 @@ function App() {
         <Routes>
           <Route path="/dashboard" element={isLoggedIn ? <Dashboard/> : <Navigate to='/'/>} />
           <Route path="/shipping" element={<Shipping/>} />
-          <Route path="/" element={!isLoggedIn ? <Login/> : <Navigate to='/shipping'/>}/>
+          <Route path="/" element={<Login/>}/>
               
         </Routes>
       </BrowserRouter>

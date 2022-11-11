@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as   useNavigate } from 'react-router-dom';
+import { BrowserRouter as outer, Route, Routes, Navigate, useParams,  useNavigate } from 'react-router-dom';
 
 
 export default function Login() {
@@ -7,7 +7,7 @@ export default function Login() {
   const onChange = (event) => {
     setValue(event.target.value);
   };
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   const [values, setValues] = useState({
     _username: '', _password: ''
   });
@@ -26,7 +26,7 @@ export default function Login() {
     }
     const token = await response.json();
     localStorage.setItem('token', token['token'])
-    navigate('/shipping') 
+    
   }
   const set = name => {
     return ({ target: { value } }) => {
@@ -37,7 +37,9 @@ export default function Login() {
   const onSubmit = async (event) => {
     event.preventDefault(); // Prevent default submission
     try {
+      
       await login();
+      navigate('/shipping') 
       setValues({
         _username: '', _password: ''
       });
