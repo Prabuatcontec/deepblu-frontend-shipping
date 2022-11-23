@@ -59,7 +59,8 @@ export default function Shipping() {
     SOST_ShipUser: '',
     SOST_Status: '',
     SCMT_Method: '',
-    SOMT_ShipToDate: getdate()
+    SOMT_ShipToDate: getdate(),
+    RETURN_LABEL:false
   });
 
 
@@ -78,8 +79,12 @@ export default function Shipping() {
     if (response.status !== 200) {
       throw new Error(`Request failed: ${response.status}`);
     }
-    const shippingDetail = await response.json();
-    console.log(999)
+    const shippingDetail = await response.json(); 
+    if (courierObject[shippingDetail.SCMT_Method].slice(-3) === "_RL") {
+      console.log('went in')
+      shippingDetail.SCMT_Method = courierObject[shippingDetail.SCMT_Method].slice(0, -3)
+      shippingDetail.RETURN_LABEL = true 
+    }  
     setShipDetail(shippingDetail);
     setValidShip(true)
     localStorage.setItem('shipping_detail', shippingDetail['SOST_CourierMethodID'])
@@ -138,7 +143,9 @@ export default function Shipping() {
     "Ground Residential": "GROUND_HOME_DELIVERY",
     "Ground/RL": "FEDEX_GROUND_RL",
     "Ground": "FEDEX_GROUND",
-    "2nd Day Air/RL": "FEDEX_2_DAY"
+    "2nd Day Air/RL": "FEDEX_2_DAY",
+    "SmartPost Parcel Select/RL": "SMART_POST_RL",
+    "SmartPost Parcel Select": "SMART_POST"
     // "Ground Residential Bulk":
     // "Priority Overnight Saturday/RL":
     // "Ground Residential/RL":
@@ -164,113 +171,112 @@ export default function Shipping() {
 
     if (weight === '' || weight > 1) {
       alert(`Weight should be greater than 0 and less than 1`);
-    } else { 
-    try {
+    } else {
+      try {
 
-      setReturnLab(false)
-      console.log(shipDetail.SCMT_Method)
-      setCourier(shipDetail.SCMT_Method)
-      if (courier.slice(-3) === "_RL") {
-        setCourier(courier.slice(0, -3))
-        setReturnLab(true)
-      }
+        
 
-      const shipObject = {
-        "labelResponseOptions": "LABEL",
-        "requestedShipment": {
-          "shipper": {
-            "contact": {
-              "personName": "CONTEC",
-              "phoneNumber": 1234567890,
-              "companyName": "CONTEC LLC"
-            },
-            "address": {
-              "streetLines": [
-                "1011 State St. "
-              ],
-              "city": "Schenectady",
-              "stateOrProvinceCode": "NY",
-              "postalCode": 12307,
-              "countryCode": "US"
-            }
-          },
-          "recipients": [
-            {
+        const shipObject = {
+          "labelResponseOptions": "LABEL",
+          "requestedShipment": {
+            "shipper": {
               "contact": {
-                "personName": shipDetail.SOMT_ShipToName,
-                "phoneNumber": shipDetail.SOMT_ShipToPhone,
-                "companyName": shipDetail.SOMT_ShipToCompany
+                "personName": "CONTEC",
+                "phoneNumber": 1234567890,
+                "companyName": "CONTEC LLC"
               },
               "address": {
                 "streetLines": [
-                  shipDetail.SOMT_ShipToAddr1,
-                  shipDetail.SOMT_ReturnToAddr2
+                  "1011 State St. "
                 ],
-                "city": shipDetail.SOMT_ShipToCity,
-                "stateOrProvinceCode": shipDetail.SOMT_ShipToState,
-                "postalCode": shipDetail.SOMT_ShipToPostalCode,
-                "countryCode": shipDetail.SOMT_ShipToCountry
+                "city": "Schenectady",
+                "stateOrProvinceCode": "NY",
+                "postalCode": 12307,
+                "countryCode": "US"
               }
-            }
-          ],
-          "shipDatestamp": getdate(),
-          "serviceType": courierObject[courier],
-          "packagingType": "YOUR_PACKAGING",
-          "pickupType": "USE_SCHEDULED_PICKUP",
-          "blockInsightVisibility": false,
-          "shippingChargesPayment": {
-            "paymentType": "SENDER"
-          },
-          "shipmentSpecialServices": {
-            "specialServiceTypes": [
-              "RETURN_SHIPMENT"
+            },
+            "recipients": [
+              {
+                "contact": {
+                  "personName": shipDetail.SOMT_ShipToName,
+                  "phoneNumber": shipDetail.SOMT_ShipToPhone,
+                  "companyName": shipDetail.SOMT_ShipToCompany
+                },
+                "address": {
+                  "streetLines": [
+                    shipDetail.SOMT_ShipToAddr1,
+                    shipDetail.SOMT_ReturnToAddr2
+                  ],
+                  "city": shipDetail.SOMT_ShipToCity,
+                  "stateOrProvinceCode": shipDetail.SOMT_ShipToState,
+                  "postalCode": shipDetail.SOMT_ShipToPostalCode,
+                  "countryCode": shipDetail.SOMT_ShipToCountry
+                }
+              }
             ],
-            "returnShipmentDetail": {
-              "returnType": "PRINT_RETURN_LABEL"
-            }
-          },
-          "labelSpecification": {
-            "imageType": "PDF",
-            "labelStockType": "STOCK_4X6"
-          },
-          "requestedPackageLineItems": [
-            {
-              "weight": {
-                "value": weight,
-                "units": "LB"
+            "shipDatestamp": getdate(),
+            "serviceType": shipDetail.SCMT_Method,
+            "packagingType": "YOUR_PACKAGING",
+            "pickupType": "USE_SCHEDULED_PICKUP",
+            "blockInsightVisibility": false,
+            "shippingChargesPayment": {
+              "paymentType": "SENDER"
+            },
+            "shipmentSpecialServices": {
+              "specialServiceTypes": [
+                "RETURN_SHIPMENT"
+              ],
+              "returnShipmentDetail": {
+                "returnType": "PRINT_RETURN_LABEL"
               }
-            }
-          ]
-        },
-        "accountNumber": {
-          "value": "740561073"
+            },
+            "labelSpecification": {
+              "imageType": "PDF",
+              "labelStockType": "STOCK_4X6"
+            },
+            "requestedPackageLineItems": [
+              {
+                "weight": {
+                  "value": weight,
+                  "units": "LB"
+                }
+              }
+            ]
+          },
+          "accountNumber": {
+            "value": "740561073"
+          }
         }
-      }
 
-      if (returnLab == false) {
-        //shipObject.requestedShipment.shipmentSpecialServices = {}
-      }
-
-      const response = await fetch('ship/v1/shipments', {
-        method: 'POST',
-        body: JSON.stringify(shipObject),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + localStorage.getItem('fedexToken')
+        if (courier == 'SMART_POST') {
+          shipObject.requestedShipment.smartPostInfoDetail = {
+            "ancillaryEndorsement": "RETURN_SERVICE",
+            "hubId": "5015",
+            "indicia": "PRESORTED_STANDARD",
+            "specialServices": "USPS_DELIVERY_CONFIRMATION"
+          }
         }
-      });
-      if (response.status !== 200) {
-        throw new Error(`Request failed: ${response.status}`);
-      }
-      const shipDetails = await response.json(); 
-      window.open("data:application/pdf;base64," + shipDetails.output.transactionShipments[0].pieceResponses[0].packageDocuments[0].encodedLabel);
-      console.log(shipObject)
-    } catch (e) {
-      alert(`Registration failed! ${e.message}`);
 
+        const response = await fetch('ship/v1/shipments', {
+          method: 'POST',
+          body: JSON.stringify(shipObject),
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('fedexToken')
+          }
+        });
+        if (response.status !== 200) {
+          throw new Error(`Request failed: ${response.status}`);
+        }
+        const shipDetails = await response.json();
+        window.open("data:application/pdf;base64," + shipDetails.output.transactionShipments[0].pieceResponses[0].packageDocuments[0].encodedLabel);
+        console.log(shipObject)
+      } catch (e) {
+        alert(`Registration failed! ${e.message}`);
+
+      }
     }
-  }
   }
 
   const onChange = (event) => {
